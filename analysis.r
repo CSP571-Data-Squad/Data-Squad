@@ -76,107 +76,8 @@ dev.off()
 
 
 
-#Secondary dataset - EDA.
-##Filtering and merging secondary 1 data##
-
-#Load data, rename columns, Filter data to have only 2012
-data1 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Secondary1\\firms-with-female-top-manager-of-firms-bars.csv')
-names(data1) <- c(names(data1)[-4], "Firms_with_female_top_manager")
-nrow(data1)
-
-nrow(data1[as.numeric(data1[,"Year"]) == 2012,])
-data1 <- data1[data1[,"Year"] == 2012, ]
-data1 <- data1[data1[,"Code"] != "", ]
-data1[,"Code"] <- as.character(data1[,"Code"])
-str(data1)
-library('reshape2')
-code1 <- melt(table(data1["Code"]))[,"Var1"]
-
-
-
-data2 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Secondary1\\proportion-of-women-in-senior-and-middle-management-positions.csv')
-names(data2) <- c(names(data2)[-4], "Female_senior_and_middle_management_position")
-data2[,"Code"] <- as.character(data2[,"Code"])
-nrow(data2)
-data2_ex <-  data2
-
-nrow(data2[as.numeric(data2[,"Year"]) == 2012,])
-data2 <- data2[data2[,"Year"] == 2012,]
-data2 <- data2[data2[,"Code"] != "",]
-code2 <- melt(table(data2["Code"]))[,"Var1"]
-
-
-
-data3 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Secondary1\\seats-held-by-women-in-national-parliaments.csv')
-names(data3) <- c(names(data3)[-4], "Women_in_parlements")
-data3[,"Code"] <- as.character(data3[,"Code"])
-nrow(data3)
-
-nrow(data3[data3[,"Year"] == 2012,])
-data3 <- data3[data3[,"Year"] == 2012,]
-data3 <- data3[data3[,"Code"] != "" ,]
-code3 <- melt(table(data3["Code"]))[,"Var1"]
-
-
-
-data4 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Secondary1\\youth-literacy-female.csv')
-names(data4) <- c(names(data4)[-4], "youth_literacy_female")
-data4[,"Code"] <- as.character(data4[,"Code"])
-nrow(data4)
-data4_ex <-  data4
-
-nrow(data4[data4[,"Year"] == 2012,])
-data4 <- data4[data4[,"Year"] == 2012,]
-data4 <- data4[data4[,"Code"] != "" ,]
-code4 <- melt(table(data4["Code"]))[,"Var1"]
-
-data5 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Primary\\homicides-per-100000-people-per-year.csv')
-names(data5) <- c(names(data5)[-4], "homicide_rate")
-data5[,"Code"] <- as.character(data5[,"Code"])
-nrow(data5)
-
-
-
-nrow(data5[data5[,"Year"] == 2012,])
-data5 <-  data5[data5[,"Year"] == 2012,]
-data5 <-  data5[data5[,"Code"] != "",]
-code5 <- melt(table(data5["Code"]))[,"Var1"]
-
-#outa join
-data <- merge(data1[,c(2,4)], data2, by="Code", all=TRUE)
-data <- merge(data3[,c(2,4)], data, by="Code", all=TRUE)
-data <- merge(data4[,c(2,4)], data, by="Code", all=TRUE)
-data <-  merge(data5[,c(2,4)],data, by = "Code", all = TRUE)
-data[,"Year"] <- rep(2012, nrow(data))
-
-Entit <- data.frame(Code=c(data1[,"Code"],data2[,"Code"], data3[,"Code"], data4[,"Code"],data5[,"Code"]),
-                    Entity=c(as.character(data1[,"Entity"]), as.character(data2[,"Entity"]), as.character(data3[,"Entity"]), as.character(data4[,"Entity"]),as.character(data5[,"Entity"])))
-names(Entit)
-Entit <- unique(Entit)
-
-#data <- data[,-c(5)]
-
-secondary_data1 <- merge(data, Entit, by="Code", all.x = TRUE)
-keeps <- c("Code","homicide_rate","youth_literacy_female","Women_in_parlements","Year","Female_senior_and_middle_management_position","Entity.y","Firms_with_female_top_manager")
-secondary_data1 <-   secondary_data1[,keeps,drop = FALSE]
-colnames(secondary_data1)[7] <-  "Country"
-miss_s1 <- sapply(secondary_data1,function(x) sum(is.na(x)))
-
-##missing values are more in youth_literacy_female, female_senior and middle
-hist(secondary_data1$Women_in_parlements)
-#replace by median
-secondary_data1$Women_in_parlements[which(is.na(secondary_data1$Women_in_parlements))] <- median(secondary_data1$Women_in_parlements,na.rm = TRUE)
-
-
-data2012 <- data2_ex[data2_ex[,"Year"] == 2012,]
-data2011 <- data2_ex[data2_ex[,"Year"] == 2011,]
-data4_2012 <- data4_ex[data4_ex[,"Year"] == 2012,]
-data4_2011 <- data4_ex[data4_ex[,"Year"] == 2011,]
-
-
-
-
-
+#Secondary dataset - EDA
+#########################################################################
 #secondary 2
 
 lower_secondary <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Secondary2\\completion-rate-of-lower-secondary-education.csv')
@@ -223,6 +124,8 @@ gross_enrol_secondary <- gross_enrol_secondary[gross_enrol_secondary[,"Year"] ==
 gross_enrol_secondary <- gross_enrol_secondary[gross_enrol_secondary[,"Code"] != "",]
 gross_enrol_secondary_code <- melt(table(gross_enrol_secondary["Code"]))[,"Var1"]
 
+
+
 #outa join
 secondary_data2 <- merge(lower_secondary[,c(2,4)], gov_expen, by="Code", all=TRUE)
 secondary_data2 <- merge(gross_enrol_primary[,c(2,4)], secondary_data2, by="Code", all=TRUE)
@@ -234,11 +137,68 @@ Entit_2 <- data.frame(Code=c(lower_secondary[,"Code"],gov_expen[,"Code"], gross_
                     Entity=c(as.character(lower_secondary[,"Entity"]), as.character(gov_expen[,"Entity"]), as.character(gross_enrol_primary[,"Entity"]), as.character(gross_enrol_secondary[,"Entity"]),as.character(data5[,"Entity"])))
 names(Entit_2)
 Entit_2 <- unique(Entit_2)
-
-#data <- data[,-c(5)]
-
 secondary_data2_final <- merge(secondary_data2, Entit_2, by="Code", all.x = TRUE)
 keeps <- c("Code","homicide_rate","gov_expen","gross_enrol_secondary","Year","gross_enrol_primary","Entity.y","lower_secondary")
 secondary_data2_final <-   secondary_data2_final[,keeps,drop = FALSE]
 colnames(secondary_data2_final)[7] <-  "Country"
-nrow(secondary_data2_final)
+
+
+miss_s2 <- sapply(secondary_data2_final,function(x) sum(is.na(x)))
+missing_percent <- (miss_s2/nrow(secondary_data2_final))*100
+miss_s2
+missing_percent
+secondary_temp <-  secondary_data2_final
+
+#cleaning dataset
+secondary_data2_final <- secondary_data2_final[!is.na(secondary_data2_final$homicide_rate),]
+secondary_data2_final$Country <- factor(secondary_data2_final$Country)
+
+
+#gov_expen has no outliers and histogram also seems normal distribution so using mean
+secondary_data2_final$gov_expen[which(is.na(secondary_data2_final$gov_expen))] <- mean(secondary_data2_final$gov_expen,na.rm = TRUE)
+
+#gross_enrol_primary having outliers so replacing my median
+secondary_data2_final$gross_enrol_primary[which(is.na(secondary_data2_final$gross_enrol_primary))] <- median(secondary_data2_final$gross_enrol_primary,na.rm = TRUE)
+
+
+#gross_enrol_Secondary is being replaced by mean for NA's.Since
+#for the NA's the corresponding the gross_enrol_primary rate is pretty good
+#and has minimum of 80%.the mean is around 80% for secondary. So it would be reasonable
+secondary_data2_final$gross_enrol_secondary[which(is.na(secondary_data2_final$gross_enrol_secondary))] <-  mean(secondary_data2_final$gross_enrol_secondary,na.rm = TRUE)
+
+#since, we have considered the minimum value, completion rate for lower secondary
+#is also assumed it would be lower. as mean is lower trying to impute it by mean
+secondary_data2_final$lower_secondary[which(is.na(secondary_data2_final$lower_secondary))] <-  mean(secondary_data2_final$lower_secondary,na.rm = TRUE)
+
+library('Amelia')
+missmap(secondary_data2_final, main = "Missing values")
+
+
+pdf(file = "C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\EDA\\histograms_EDA_secondary2.pdf")
+#plotting only for numeric variables
+for (i in names(which(sapply(secondary_data2_final,is.numeric)))) 
+{
+  if(names(secondary_data2_final[i]) != 'Year')
+  {
+    hist(secondary_data2_final[,i], data = secondary_data2_final,main = paste(i,"histogram"))
+  }
+}
+dev.off()
+
+pdf(file = "C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\EDA\\boxplots_EDA_secondary2.pdf")
+#plotting only for numeric variables
+for (i in names(which(sapply(secondary_data2_final,is.numeric)))) 
+{
+  if(names(secondary_data2_final[i]) != 'Year')
+  {
+    boxplot(secondary_data2_final[i], data = secondary_data2_final,main = paste(i,"boxplot"))
+  }
+}
+dev.off() 
+
+write.csv(secondary_data2_final,'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\Secondary2_Cleaned.csv')
+
+secondary2_cor <- cor(secondary_data2_final[which(sapply(secondary_data2_final,is.numeric))])
+secondary2_cor <- secondary2_cor[c(1,2,3,5,6),c(1,2,3,5,6)]
+corrplot(secondary2_cor)
+#seems there is no correaltion between predictors to the target variable.
