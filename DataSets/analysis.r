@@ -13,29 +13,46 @@ primary_nona <- primary_nona[primary_nona$Country_Code != "",]
 primary_nona$Country <-  factor(primary_nona$Country)
 primary_nona$Country_Code <- factor(primary_nona$Country_Code)
 primary_nona$poverty_gap <- as.numeric(format(primary_nona$poverty_gap,scientific = FALSE))
-summary(primary_nona)
+primary_before <- primary_nona
+summary(primary_before)
 
- 
+normalization <-function(x) { (x -min(x))/(max(x)-min(x))   }
+#summary(normalization(primary_before$malnutrition_death_rates))
+primary_before <- primary_before[!primary_before$Country == 'World',]
+primary_before$poverty_gap <- log10(primary_before$poverty_gap + 1)
+primary_before$poverty_gap[is.na(primary_before$poverty_gap)] <- median(primary_before$poverty_gap,na.rm = TRUE)
+
+primary_before <- primary_before[!is.na(primary_before$Infant_mortality_rate),]
+primary_before$Infant_mortality_rate <- sqrt(primary_before$Infant_mortality_rate)
+primary_before$malnutrition_death_rates <- (primary_before$malnutrition_death_rates)^(1/4)
+
+#resource from https://knoema.com/search?query=public%20health%20expenditure%20south%20sudan
+primary_before$public_health_exp[which(primary_before$Country == 'South Sudan')] <-  1.09
+
+primary_before$GDP_per_capita[is.na(primary_before$GDP_per_capita)] <- median(primary_before$GDP_per_capita,na.rm = TRUE)
+primary_before$GDP_per_capita <- log10(primary_before$GDP_per_capita)
+
+primary_before$public_health_exp[is.na(primary_before$public_health_exp)] <- median(primary_before$public_health_exp,na.rm = TRUE)
+primary_before$public_health_exp <- log10(primary_before$public_health_exp)
+
+primary_before$annual_health_care_per_capita[is.na(primary_before$annual_health_care_per_capita)] <- median(primary_before$annual_health_care_per_capita,na.rm = TRUE)
+primary_before$annual_health_care_per_capita <- log10(primary_before$annual_health_care_per_capita)
+
 library('rvest')
 library('tidyr')
-html_countries <-  read_html('https://developers.google.com/public-data/docs/canonical/countries_csv')
-countries_table <- html_nodes(html_countries,css = "table")
-countries_df <- html_table(countries_table)[[1]]
-countries <- countries_df[-(1:3)]
-list_of_countries <- countries[order(countries),]
 
-
-missCounts <- sapply(primary_nona,function(x) sum(is.na(x)))
+missCounts <- sapply(primary_before,function(x) sum(is.na(x)))
 missCounts
-primary_nona$poverty_gap[is.na(primary_nona$poverty_gap)] <- median(primary_nona$poverty_gap,na.rm = TRUE)
-primary_nona$public_health_exp[is.na(primary_nona$public_health_exp)] <- median(primary_nona$public_health_exp,na.rm = TRUE)
-primary_nona$Infant_mortality_rate[is.na(primary_nona$Infant_mortality_rate)] <- median(primary_nona$Infant_mortality_rate,na.rm = TRUE)
-primary_nona$GDP_per_capita[is.na(primary_nona$GDP_per_capita)] <- median(primary_nona$GDP_per_capita,na.rm = TRUE)
-primary_nona$annual_health_care_per_capita[is.na(primary_nona$annual_health_care_per_capita)] <- median(primary_nona$annual_health_care_per_capita,na.rm = TRUE)
-missCounts <- sapply(primary_nona,function(x) sum(is.na(x)))
-missCounts
+# primary_nona$poverty_gap[is.na(primary_nona$poverty_gap)] <- median(primary_nona$poverty_gap,na.rm = TRUE)
+# primary_nona$public_health_exp[is.na(primary_nona$public_health_exp)] <- median(primary_nona$public_health_exp,na.rm = TRUE)
+# primary_nona$Infant_mortality_rate[is.na(primary_nona$Infant_mortality_rate)] <- median(primary_nona$Infant_mortality_rate,na.rm = TRUE)
+# primary_nona$GDP_per_capita[is.na(primary_nona$GDP_per_capita)] <- median(primary_nona$GDP_per_capita,na.rm = TRUE)
+# primary_nona$annual_health_care_per_capita[is.na(primary_nona$annual_health_care_per_capita)] <- median(primary_nona$annual_health_care_per_capita,na.rm = TRUE)
+# missCounts <- sapply(primary_nona,function(x) sum(is.na(x)))
+# missCounts
+# summary(primary_nona)
 
-write.csv(primary_nona,'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\final_Cleaned.csv')
+write.csv(primary_before,'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\final_Cleaned_v2.csv')
 library('Amelia')
 missmap(primary_nona, main = "Missing values")
 
@@ -44,11 +61,11 @@ pairs(primary_nona[c('poverty_gap','public_health_exp','malnutrition_death_rates
 
 pdf(file = "C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\EDA\\histograms_EDA.pdf")
 #plotting only for numeric variables
-for (i in names(which(sapply(primary_nona,is.numeric)))) 
+for (i in names(which(sapply(primary_before,is.numeric)))) 
 {
-  if(names(primary_nona[i]) != 'Year')
+  if(names(primary_before[i]) != 'Year')
   {
-    hist(primary_nona[,i], data = primary_nona,main = paste(i,"histogram"))
+    hist(primary_before[,i], data = primary_before,main = paste(i,"histogram"))
   }
 }
 dev.off() 
@@ -56,17 +73,17 @@ dev.off()
 
 pdf(file = "C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\EDA\\boxplots_EDA.pdf")
 #plotting only for numeric variables
-for (i in names(which(sapply(primary_nona,is.numeric)))) 
+for (i in names(which(sapply(primary_before,is.numeric)))) 
   {
-    if(names(primary_nona[i]) != 'Year')
+    if(names(primary_before[i]) != 'Year')
     {
-      boxplot(primary_nona[i], data = primary_nona,main = paste(i,"boxplot"))
+      boxplot(primary_before[i], data = primary_before,main = paste(i,"boxplot"))
     }
   }
 dev.off() 
 
 library("corrplot")
-primarynona.cor <- cor(primary_nona[which(sapply(primary_nona, is.numeric))])
+primarynona.cor <- cor(primary_before[which(sapply(primary_before, is.numeric))],method = 'spearman')
 primarynona.cor <- primarynona.cor[2:8,2:8]
 pdf(file = "C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\EDA\\coorrelationplots_EDA.pdf")
 corrplot(primarynona.cor,title = "correlation plot for BostonHousing dataset")
@@ -125,6 +142,18 @@ gross_enrol_secondary <- gross_enrol_secondary[gross_enrol_secondary[,"Code"] !=
 gross_enrol_secondary_code <- melt(table(gross_enrol_secondary["Code"]))[,"Var1"]
 
 
+data5 <- read.csv('C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Primary\\homicides-per-100000-people-per-year.csv')
+names(data5) <- c(names(data5)[-4], "homicide_rate")
+data5[,"Code"] <- as.character(data5[,"Code"])
+nrow(data5)
+#data2_ex <-  data2
+nrow(data5[as.numeric(data5[,"Year"]) == 2012,])
+data5 <- data5[data5[,"Year"] == 2012,]
+data5 <- data5[data5[,"Code"] != "",]
+data5_code <- melt(table(data5["Code"]))[,"Var1"]
+nrow(data5)
+
+
 
 #outa join
 secondary_data2 <- merge(lower_secondary[,c(2,4)], gov_expen, by="Code", all=TRUE)
@@ -134,13 +163,13 @@ secondary_data2 <-  merge(data5[,c(2,4)],secondary_data2, by = "Code", all = TRU
 secondary_data2[,"Year"] <- rep(2012, nrow(secondary_data2))
 
 Entit_2 <- data.frame(Code=c(lower_secondary[,"Code"],gov_expen[,"Code"], gross_enrol_primary[,"Code"], gross_enrol_secondary[,"Code"],data5[,"Code"]),
-                    Entity=c(as.character(lower_secondary[,"Entity"]), as.character(gov_expen[,"Entity"]), as.character(gross_enrol_primary[,"Entity"]), as.character(gross_enrol_secondary[,"Entity"]),as.character(data5[,"Entity"])))
+                    Entity=c(as.character(lower_secondary[,"Entity"]), as.character(gov_expen[,"Entity"]), as.character(gross_enrol_primary[,"Entity"]), as.character(gross_enrol_secondary[,"Entity"]),as.character(data5[,'Entity'])))
 names(Entit_2)
 Entit_2 <- unique(Entit_2)
 secondary_data2_final <- merge(secondary_data2, Entit_2, by="Code", all.x = TRUE)
-keeps <- c("Code","homicide_rate","gov_expen","gross_enrol_secondary","Year","gross_enrol_primary","Entity.y","lower_secondary")
+keeps <- c("homicide_rate","lower_secondary","gov_expen","gross_enrol_secondary","gross_enrol_primary","Entity.y","Year","Code")
 secondary_data2_final <-   secondary_data2_final[,keeps,drop = FALSE]
-colnames(secondary_data2_final)[7] <-  "Country"
+colnames(secondary_data2_final)[6] <-  "Country"
 
 
 miss_s2 <- sapply(secondary_data2_final,function(x) sum(is.na(x)))
