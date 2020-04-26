@@ -1,6 +1,7 @@
+
 library('shiny')
 load(file = 'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\model.rda')
-ibrary(shinyWidgets)
+library(shinyWidgets)
 dataframe_x <- data.frame(public_health_exp = numeric(),malnutrition_death_rates = numeric(),Infant_mortality_rate = numeric(),GDP_per_capita = numeric(),annual_health_care_per_capita = numeric(),life_exp = numeric(), median_age_2010 = numeric(),fertility = numeric(),gov_exp_per_capita = numeric())
 ui <- fluidPage(
   titlePanel(h1("Homicide Rate", align = "center")),
@@ -129,12 +130,21 @@ server <- function(input, output){
   values$df <- dataframe_x
   new <-  observe({
     if(input$do>0){
-      newline <- isolate(c(input$public_health_e,input$malnutrition_death_rates,input$Infant_mortality_rates,input$GDP_per_capitas,input$annual_health_care_per_capitas, input$life_e, input$median_2010, input$fert, input$gov_exp_per_capitas))
+      newline <- isolate(c(input$public_health_e,
+                           log10(input$malnutrition_death_rates),
+                           log10(input$Infant_mortality_rates),
+                           log10(input$GDP_per_capitas),
+                           log10(input$annual_health_care_per_capitas),
+                           input$life_e,
+                           input$median_2010,
+                           input$fert,
+                           log10(input$gov_exp_per_capitas)))
       isolate(values$df[1,] <- newline)
     }
   })
   output$Pred <-  renderText({
-    paste('Predicted Value = ', predict(model_final2,values$df), 'value/1 million people in a year.')
+    paste('Predicted homicide rate per million people per year is:', round(predict(model_final2,values$df),4),"",sep = '\n')
   })
 }
 shinyApp(ui = ui, server = server)
+
