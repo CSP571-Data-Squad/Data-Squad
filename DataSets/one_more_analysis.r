@@ -54,21 +54,9 @@ s_filterd_copy <- s_filtered
 
 s_filterd_copy <- s_filterd_copy[,c(1,4,7,8,11,12,13,14)]
 summary(s_filterd_copy)
-summary(log10(s_filterd_copy$earnings_ratio_gap + 1))
-  s_filterd_copy[s_filterd_copy$earnings_ratio_gap > 3.153e+07,]
 
 s_filterd_copy$employment_ratio_gap[is.na(s_filterd_copy$employment_ratio_gap)] <- median(s_filterd_copy$employment_ratio_gap,na.rm = TRUE)
-cor(log10(s_filterd_copy$employment_ratio_gap + 1 ),s_filterd_copy$homicide_rate,method = 'spearman')
-
-cor(log10(s_filterd_copy$earnings_ratio_gap + 1),s_filterd_copy$homicide_rate)
 s_filterd_copy$female_top_managers_2013[is.na(s_filterd_copy$female_top_managers_2013)] <- mean(s_filterd_copy$female_top_managers_2013,na.rm = TRUE)
-
-x <- cor(p_filtered[,c(5:13)],method = 'spearman')
-corrplot(x)
-
-
-
-
 
 
 s2_filtered_copy$gross_enrol_primary[s2_filtered_copy$Country == 'Armenia'] <- 98.5
@@ -113,11 +101,6 @@ boxplot((s2_filtered_copy$lower_secondary)^2)
 
 
 
-
-
-
-
-
 s2_filtered_copy$teritary_share_2010[is.na(s2_filtered_copy$teritary_share_2010)] <- mean(s2_filtered_copy$teritary_share_2010,na.rm = TRUE)
 boxplot(s2_filtered_copy$teritary_share_2010)
 s2_filtered_copy$teritary_share_2010 <-  (s2_filtered_copy$teritary_share_2010)^(1/2)
@@ -147,28 +130,8 @@ for (i in names(which(sapply(s2_filtered,is.numeric))))
 dev.off() 
 
 
-summary(s2_filtered_copy$gross_enrol_primary)
-
-x <- s2_filtered_copy
-
-boxplot(log10(x$gross_enrol_primary))
-boxplot(s2_filtered$gross_enrol_primary)
-
-names(x)
-
-
-merged_x <- merge(p_filtered,x[,c(3,9)],all = FALSE,by = 'Country')
-names(merged_x)
-cor(merged_x[,c(5:12)],merged_x$gross_enrol_primary,method = 'spearman')
-plot(merged_x$gross_enrol_primary)
-summary(merged_x)
-write.csv(merged_x,file = 'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\merged_primary+secondary.csv')
-
-
 
 merged_x$gov_exp_per_capita <- merged_x$gov_expen * merged_x$GDP_per_capita
-hist((merged_x$gov_exp_per_capita))
-cor(log10(merged_x$gov_exp_per_capita),merged_x$homicide_Rate,method = 'spearman')
 merged_x <- merged_x[,c(5:13,15)]
 corrplot(cor(merged_x,method = 'spearman'))
 write.csv(merged_x,file = 'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\merged_primary+secondary12.csv')
