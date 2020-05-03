@@ -1,6 +1,6 @@
-
+library('neuralnet')
 library('shiny')
-load(file = 'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\Final\\model.rda')
+load(file = 'C:\\Users\\gouth\\Desktop\\Masters\\Second Semester\\CSP571\\DPA_Project\\DataSets\\saved_model_rdf_s1_s2.rdf')
 library(shinyWidgets)
 dataframe_x <- data.frame(public_health_exp = numeric(),malnutrition_death_rates = numeric(),Infant_mortality_rate = numeric(),GDP_per_capita = numeric(),annual_health_care_per_capita = numeric(),life_exp = numeric(), median_age_2010 = numeric(),fertility = numeric(),gov_exp_per_capita = numeric())
 ui <- fluidPage(
@@ -22,7 +22,7 @@ ui <- fluidPage(
   ),
   fluidRow(
     column(4,align = "center",
-           sliderInput(inputId = "public_health_e",
+           numericInput(inputId = "public_health_e",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -30,7 +30,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "malnutrition_death_rates",
+           numericInput(inputId = "malnutrition_death_rates",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -38,7 +38,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "Infant_mortality_rates",
+           numericInput(inputId = "Infant_mortality_rates",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -53,7 +53,7 @@ ui <- fluidPage(
   # br(),
   fluidRow(
     column(4,align = "center",
-           sliderInput(inputId = "GDP_per_capitas",
+           numericInput(inputId = "GDP_per_capitas",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -61,7 +61,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "annual_health_care_per_capitas",
+           numericInput(inputId = "annual_health_care_per_capitas",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -69,7 +69,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "life_e",
+           numericInput(inputId = "life_e",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -78,7 +78,7 @@ ui <- fluidPage(
                        value = ""))),
   fluidRow(
     column(4,align = "center",
-           sliderInput(inputId = "median_2010",
+           numericInput(inputId = "median_2010",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -86,7 +86,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "fert",
+           numericInput(inputId = "fert",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -94,7 +94,7 @@ ui <- fluidPage(
                        min = 0, max=100,
                        value = "")),
     column(4,align = "center",
-           sliderInput(inputId = "gov_exp_per_capitas",
+           numericInput(inputId = "gov_exp_per_capitas",
                        label = div(style = "font-family: trirong;
                                               font-size = 20px;
                                               color: white;",
@@ -130,20 +130,20 @@ server <- function(input, output){
   values$df <- dataframe_x
   new <-  observe({
     if(input$do>0){
-      newline <- isolate(c(input$public_health_e,
-                           log10(input$malnutrition_death_rates),
-                           log10(input$Infant_mortality_rates),
-                           log10(input$GDP_per_capitas),
-                           log10(input$annual_health_care_per_capitas),
-                           input$life_e,
-                           input$median_2010,
-                           input$fert,
-                           log10(input$gov_exp_per_capitas)))
+      newline <- isolate(c((input$public_health_e - 0.7922463)/(9.1632748),
+                           (log10(input$malnutrition_death_rates)+1.9910707)/(1.5644792),
+                           (log10(input$Infant_mortality_rates)+0.7212464)/(1.5644792),
+                           (log10(input$GDP_per_capitas) - 3.2646463)/(1.8333119),
+                           (log10(input$annual_health_care_per_capitas)-1.9301658)/(1.8855015),
+                           (input$life_e-62.0540000)/(21.2290000),
+                           (input$median_2010-16.0000000)/(28.7000010),
+                           (input$fert -1.2200000)/(4.1600000),
+                           (log10(input$gov_exp_per_capitas)- 1.5195230)/(68.2449210)))
       isolate(values$df[1,] <- newline)
     }
   })
   output$Pred <-  renderText({
-    paste('Predicted homicide rate per million people per year is:', round(predict(model_final2,values$df),4),"",sep = '\n')
+    paste('Predicted homicide rate per 100,000 people per year is:', round((predict(final_tuned_nn_model_deploy,values$df)[,1] * 16.9666368) + 0.5294892,4),"",sep = '\n')
   })
 }
 shinyApp(ui = ui, server = server)
